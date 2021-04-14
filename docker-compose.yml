@@ -24,5 +24,7 @@ services:
         environment:
             GUNICORN_CMD_ARGS: '--reload'
             LOG_LEVEL: 'error'
+        ports:
+          - "8080:80"
         links:
             - db
