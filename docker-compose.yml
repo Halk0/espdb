@@ -1,0 +1,28 @@
+version: '0.1'
+services:
+
+    db:
+        image: mysql:latest
+        container_name: espdb
+        environment:
+            MYSQL_DATABASE: 'db'
+            MYSQL_ROOT_PASSWORD: 'example'
+            MYSQL_USER: 'db_user'
+            MYSQL_PASSWORD: 'db_user_pass'
+            MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        expose:
+            - '3306'
+        volumes:
+            - ./devdb:/var/lib/mysql
+
+    fastapi:
+        build: .
+        dockerfile: fastapiDockerfile
+        container_name: espapi
+        volumes:
+            - ./:/app
+        environment:
+            GUNICORN_CMD_ARGS: '--reload'
+            LOG_LEVEL: 'error'
+        links:
+            - db
