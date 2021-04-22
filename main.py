@@ -41,7 +41,7 @@ app.add_middleware(
 )
 
 
-def validate_user(given_api_key: Optional[str] = None):
+def validate_user(given_api_key: Optional[str] = Header(None)):
     logger.debug(str(type(api_key)) + str(type(given_api_key)))
     logger.debug(
         f'Comparing these api_keys ORIGINAL: {api_key} GIVEN: {given_api_key}')
@@ -53,7 +53,7 @@ def validate_user(given_api_key: Optional[str] = None):
 
 
 @app.post('/new/wifiscan/data')
-def new_playlist(data: WiFiscan, X_API_KEY: Optional[str] = None):
+def new_playlist(data: WiFiscan, X_API_KEY: Optional[str] = Header(None)):
     try:
         validate_user(X_API_KEY)
         connection = database_handler()
@@ -64,6 +64,7 @@ def new_playlist(data: WiFiscan, X_API_KEY: Optional[str] = None):
         return {"success": True}
     except Exception as e:
         logger.exception(f"Ran in to an exception: {e}")
+        return e
 
 
 @app.get('/wifidata')
