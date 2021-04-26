@@ -70,7 +70,7 @@ def new_probedata(data: ProbeData, X_API_KEY: Optional[str] = Header(None)):
         probeddata = jsonable_encoder(data)
         logger.debug(type(probeddata))
         logger.debug(f"this is the received json: {probeddata}")
-        connection.add_WiFiData(probeddata)
+        connection.add_ProbeData(probeddata)
         return {"success": True}
     except Exception as e:
         logger.exception(f"Ran in to an exception: {e}")
