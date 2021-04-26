@@ -14,7 +14,7 @@ import os
 import datetime
 import uuid
 import json
-from models import WiFiscan
+from models import WiFiscan, ProbeData
 import sys
 
 pwd = os.path.dirname(os.path.realpath(__file__))
