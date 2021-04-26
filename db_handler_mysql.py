@@ -24,8 +24,10 @@ class ProbeData(Base):
 
     SSID = Column('SSID', VARCHAR(length=255), primary_key=True, unique=False)
     MAC = Column('MAC', VARCHAR(length=255), unique=False)
+
     def __repr__(self):
         return f"<ProbeData(SSID={self.SSID}, MAC={self.MAC})>"
+
 
 class WiFiData(Base):
     __tablename__ = 'WiFiData'
@@ -33,7 +35,8 @@ class WiFiData(Base):
     SSID = Column('SSID', VARCHAR(length=255), primary_key=True)
     RSSI = Column('RSSI', INTEGER, nullable=True, unique=False)
     MAC = Column('MAC', VARCHAR(length=255), nullable=False, unique=False)
-    Encryptiontype = Column('Encryptiontype', VARCHAR(length=255), nullable=True, unique=False)
+    Encryptiontype = Column('Encryptiontype', VARCHAR(
+        length=255), nullable=True, unique=False)
     __table_args__ = (UniqueConstraint('SSID'),)
 
     def __repr__(self):
@@ -92,11 +95,10 @@ class database_handler():
         session = self.sqlsession()
         try:
             for data in scanData["wifilist"]:
-                if data["SSID"] != "":
-                    new_WiFiData = WiFiData(SSID=data["SSID"],
-                                            RSSI=data["RSSI"], MAC=data["MAC"], Encryptiontype=data["Encryptiontype"])
-                    session.add(new_WiFiData)
-                    session.commit()
+                new_WiFiData = WiFiData(SSID=data["SSID"],
+                                        RSSI=data["RSSI"], MAC=data["MAC"], Encryptiontype=data["Encryptiontype"])
+                session.add(new_WiFiData)
+                session.commit()
         except IntegrityError as e:
             self.logger.exception(f"Duplicate keys provided: {e}")
             return False, "Duplicate keys provided"
@@ -114,13 +116,14 @@ class database_handler():
             )
             data_dict[row.MAC].append(row.SSID)
         return data_dict
-            
 
     def add_ProbeData(self, probeddata):
         session = self.sqlsession()
         try:
             for data in probeddata["ProbeList"]:
-                new_probedata = ProbeData(SSID=data["SSID"], MAC=data["MAC"])
+                if data["SSID"] != "":
+                    new_probedata = ProbeData(
+                        SSID=data["SSID"], MAC=data["MAC"])
         except IntegrityError as e:
             self.logger.exception(f"Duplicate somethin, this shouldn't occurr")
         return True, None
