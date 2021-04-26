@@ -26,5 +26,3 @@ services:
             LOG_LEVEL: 'error'
         ports:
           - "8080:80"
-        links:
-            - db

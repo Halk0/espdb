@@ -26,12 +26,7 @@ logger = setup_logging("fastapi")
 api_key = os.environ.get('api_key')
 
 # Adds Fastapi the ability to return data to servers who originate from different address/port
-origins = [
-    "http://172.17.0.1",
-    "http://172.17.0.2",
-    "http://172.17.0.3",
-    "http://172.17.0.4"
-]
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -67,6 +62,21 @@ def new_playlist(data: WiFiscan, X_API_KEY: Optional[str] = Header(None)):
         return e
 
 
+@app.post('/new/probe/data')
+def new_probedata(data: ProbeData, X_API_KEY: Optional[str] = Header(None)):
+    try:
+        validate_user(X_API_KEY)
+        connection = database_handler()
+        probeddata = jsonable_encoder(data)
+        logger.debug(type(probeddata))
+        logger.debug(f"this is the received json: {probeddata}")
+        connection.add_WiFiData(probeddata)
+        return {"success": True}
+    except Exception as e:
+        logger.exception(f"Ran in to an exception: {e}")
+        return e
+        
+
 @app.get('/wifidata')
 def wifi_data(X_API_KEY: Optional[str] = Header(None)):
     validate_user(X_API_KEY)
@@ -77,6 +87,15 @@ def wifi_data(X_API_KEY: Optional[str] = Header(None)):
     else:
         return data
 
+@app.get('/probedata')
+def probe_data(X_API_KEY: Optional[str] = Header(None)):
+    validate_user(X_API_KEY)
+    connection = database_handler()
+    data = connection.get_probe_data()
+    if data == False:
+        return {"success": False}
+    else:
+        return data
 
 @app.get('/')
 def read_root():

@@ -19,6 +19,14 @@ port = os.environ.get('fastapi_db_port')
 Base = declarative_base()
 
 
+class ProbeData(Base):
+    __tablename__ = 'ProbeData'
+
+    SSID = Column('SSID', VARCHAR(length=255), primary_key=True, unique=False)
+    MAC = Column('MAC', VARCHAR(length=255), unique=False)
+    def __repr__(self):
+        return f"<ProbeData(SSID={self.SSID}, MAC={self.MAC})>"
+
 class WiFiData(Base):
     __tablename__ = 'WiFiData'
 
@@ -84,11 +92,35 @@ class database_handler():
         session = self.sqlsession()
         try:
             for data in scanData["wifilist"]:
-                new_WiFiData = WiFiData(SSID=data["SSID"],
-                                        RSSI=data["RSSI"], MAC=data["MAC"], Encryptiontype=data["Encryptiontype"])
-                session.add(new_WiFiData)
-                session.commit()
+                if data["SSID"] != "":
+                    new_WiFiData = WiFiData(SSID=data["SSID"],
+                                            RSSI=data["RSSI"], MAC=data["MAC"], Encryptiontype=data["Encryptiontype"])
+                    session.add(new_WiFiData)
+                    session.commit()
         except IntegrityError as e:
             self.logger.exception(f"Duplicate keys provided: {e}")
             return False, "Duplicate keys provided"
+        return True, None
+
+    def get_probe_data(self):
+        data_dict = {}
+        session = self.sqlsession()
+        result = session.execute(select([ProbeData]))
+        for row in result:
+            if row.MAC not in data_dict:
+                data_dict[row.SSID] = []
+            self.logger.debug(
+                f"Fetched this probedata: {row.SSID} with this mac: {row.MAC}"
+            )
+            data_dict[row.MAC].append(row.SSID)
+        return data_dict
+            
+
+    def add_ProbeData(self, probeddata):
+        session = self.sqlsession()
+        try:
+            for data in probeddata["ProbeList"]:
+                new_probedata = ProbeData(SSID=data["SSID"], MAC=data["MAC"])
+        except IntegrityError as e:
+            self.logger.exception(f"Duplicate somethin, this shouldn't occurr")
         return True, None

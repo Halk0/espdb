@@ -11,3 +11,10 @@ class WiFinetwork(BaseModel):
 
 class WiFiscan(BaseModel):
     wifilist: List[WiFinetwork]
+
+
+class Probeinfo(BaseModel):
+    SSID: str
+    MAC: str
+class ProbeData(BaseModel):
+    ProbeList: List[Probeinfo]
