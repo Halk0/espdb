@@ -110,11 +110,12 @@ class database_handler():
         result = session.execute(select([ProbeData]))
         for row in result:
             if row.MAC not in data_dict:
-                data_dict[row.SSID] = []
+                data_dict[row.MAC] = []
             self.logger.debug(
                 f"Fetched this probedata: {row.SSID} with this mac: {row.MAC}"
             )
-            data_dict[row.MAC].append(row.SSID)
+            if row.SSID not in data_dict[row.MAC]:
+                data_dict[row.MAC].append(row.SSID)
         return data_dict
 
     def add_ProbeData(self, probeddata):
@@ -122,8 +123,11 @@ class database_handler():
         try:
             for data in probeddata["ProbeList"]:
                 if data["SSID"] != "":
+                    self.logger.debug("Adding probedata to database")
                     new_probedata = ProbeData(
                         SSID=data["SSID"], MAC=data["MAC"])
+                    session.add(new_probedata)
+                    session.commit()
         except IntegrityError as e:
             self.logger.exception(f"Duplicate somethin, this shouldn't occurr")
         return True, None
